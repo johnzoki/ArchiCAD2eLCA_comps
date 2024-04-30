@@ -1,5 +1,6 @@
 # Local config files
 /xml_export/*
+/ifc_import/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -5,8 +5,6 @@ from dataclasses import dataclass
 
 start = time.time()
 
-ET.register_namespace('','https://www.bauteileditor.de')
-
 @dataclass
 class Element:
 	"""Class for keeping track of SubElement Values of ElementTree"""
@@ -90,6 +88,8 @@ def save_Elements(*Elements):
 		xml_template.write('xml_export/' + xml_filename, encoding = "UTF-8", xml_declaration=True, short_empty_elements=False)
 
 import element_import
+
+ET.register_namespace('','https://www.bauteileditor.de')
 save_Elements(element_import.Element1, element_import.Element2, element_import.Element3)
 
 print(time.time()-start)
