@@ -1,4 +1,6 @@
 import os
 import ifcopenshell
 
-ifc_import = ifcopenshell.open("/ifc_import/*.ifc")
+model = ifcopenshell.open("ifc_import/TestIFC.ifc")
+
+print(model)
