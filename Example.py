@@ -1,44 +1,11 @@
 import os
+import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
+
+start = time.time()
+
 ET.register_namespace('','https://www.bauteileditor.de')
-
-
-@dataclass
-class Element:
-	"""Class for keeping track of SubElement Values of ElementTree"""
-	uuid: str
-	din276Code: str
-	quantity: str
-	refUnit: str
-	name: str
-	description: str
-	elca_eol: str
-	elca_recycling: str
-	elca_seperation: str
-	elca_rW: str
-	elca_uValue: str
-
-element_test = Element("a", 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k')
-
-print(Element)
-print(element_test)
-
-@dataclass
-class Component:
-	"""Class for keeping track of Component Values of Components Tree"""
-	isLayer: str
-	processConfigUuid: str
-	processConfigName: str
-	lifeTime: str
-	lifeTimeDelay: str
-	calcLca: str
-	isExtant: str
-	layerPosition: str
-	layerSize: str
-	layerLength: str
-	layerWidth: str
-
 
 def save_comp(element_root, import_element):
 	components_root = element_root[1]
@@ -114,3 +81,5 @@ def save_Elements(*Elements):
 
 import element_import
 save_Elements(element_import.Element1, element_import.Element2, element_import.Element3)
+
+print(time.time()-start)
