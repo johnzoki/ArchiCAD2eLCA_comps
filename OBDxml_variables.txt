@@ -1,0 +1,27 @@
+*element_uuid
+*element_din276Code
+*quantity = 1
+*refUnit = (m2, m, ...)
+*element_name
+element_description
+
+*component_isLayer = (true, false)
+*component_processConfigUuid
+*component_processConfigName
+*component_lifeTime
+*component_lifeTimeDelay
+*component_calcLca = (true, false)
+*component_isExtant = (true, false)
+*component_layerPosotion
+*component_layerSize
+*component_layerAreaRatio
+*component_layerLenght
+*component_layerWidth
+
+*item_ident
+
+elca_eol
+elca_recycling
+elca_seperation
+elca_rW
+elca_uValue

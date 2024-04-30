@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<elca xmlns="https://www.bauteileditor.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://www.bauteileditor.de https://www.bauteileditor.de/docs/1.3/elca_export.xsd" schemaVersion="1.3">
+  <element>
+    <elementInfo>
+      <name><![CDATA[""]]></name>
+      <description><![CDATA[""]]></description>
+    </elementInfo>
+    <components>
+    </components>
+    <constrCatalogs>
+      <item ident="0"/>
+      <item ident="1"/>
+      <item ident="2"/>
+      <item ident="3"/>
+      <item ident="4"/>
+      <item ident="5"/>
+    </constrCatalogs>
+    <constrDesigns/>
+    <attributes>
+      <attr ident="elca.bnb.eol">
+        <caption><![CDATA[Rückbau]]></caption>
+      </attr>
+      <attr ident="elca.bnb.recycling">
+        <caption><![CDATA[Verwertung]]></caption>
+      </attr>
+      <attr ident="elca.bnb.separation">
+        <caption><![CDATA[Trennung]]></caption>
+      </attr>
+      <attr ident="elca.rW">
+        <caption><![CDATA[R'w]]></caption>
+      </attr>
+      <attr ident="elca.uValue">
+        <caption><![CDATA[U-Wert]]></caption>
+        <numericValue></numericValue>
+      </attr>
+    </attributes>
+  </element>
+</elca>
