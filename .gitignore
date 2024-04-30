@@ -1,5 +1,5 @@
 # Local config files
-/data/*
+/xml_export/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
