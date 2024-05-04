@@ -22,20 +22,21 @@ def get_ifc_materials_and_thickness(ifc_element, ifc_element_width):
 		material_thickness_list.append((None, ifc_element_width))
 	return material_thickness_list
 
-m = ifcopenshell.open("ifc_import/TestIFC.ifc")
+def run():
+	m = ifcopenshell.open("ifc_import/TestIFC.ifc")
 
-walls_data = []
-walls = m.by_type("IfcWall")
-for wall in walls:
-	w_pset = ifcopenshell.util.element.get_psets(wall)
-	if w_pset.get("Qto_WallBaseQuantities"):
-		if bool(w_pset.get("Qto_WallBaseQuantities").get("Width")):
-			width = w_pset.get("Qto_WallBaseQuantities").get("Width")
-	materials_and_thickness = get_ifc_materials_and_thickness(wall, width)
-	wall_tag = wall.get_info()['Name']
-	wall_data = {wall_tag: materials_and_thickness}
-	walls_data.append(wall_data)
-	w_pset = ifcopenshell.util.element.get_psets(wall)
+	walls_data = []
+	walls = m.by_type("IfcWall")
+	for wall in walls:
+		w_pset = ifcopenshell.util.element.get_psets(wall)
+		if w_pset.get("Qto_WallBaseQuantities"):
+			if bool(w_pset.get("Qto_WallBaseQuantities").get("Width")):
+				width = w_pset.get("Qto_WallBaseQuantities").get("Width")
+		materials_and_thickness = get_ifc_materials_and_thickness(wall, width)
+		wall_tag = wall.get_info()['Name']
+		wall_data = {wall_tag: materials_and_thickness}
+		walls_data.append(wall_data)
+		w_pset = ifcopenshell.util.element.get_psets(wall)
 
-	w_pset = ifcopenshell.util.element.get_psets(wall)
-	print(wall_data)
+		w_pset = ifcopenshell.util.element.get_psets(wall)
+		print(wall_data)
