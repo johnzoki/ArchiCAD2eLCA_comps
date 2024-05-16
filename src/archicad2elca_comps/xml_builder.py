@@ -6,7 +6,7 @@ from dataclasses import dataclass
 start = time.time()
 
 @dataclass
-class Element:
+class ElcaElement:
 	"""Class for keeping track of SubElement Values of ElementTree"""
 	uuid: str
 	din276Code: str
@@ -21,7 +21,7 @@ class Element:
 	elca_uValue: str
 
 @dataclass
-class Component:
+class ElcaComponent:
 	"""Class for keeping track of Component Values of Components Tree"""
 	isLayer: str
 	processConfigUuid: str
@@ -42,7 +42,7 @@ def save_comp(element_root, import_element):
 	for layer_number, layer in enumerate(import_element[6], 1):
 		ET.SubElement(components_root, 'component')
 
-		c = Component(str(layer[0]), str(layer[1]), str(layer[2]), str(layer[3]),str(layer[4]), str(layer[5]), str(layer[6]), str(layer_number), str(layer[8]), str(layer[9]), str(layer[10]), str(layer[11]))
+		c = ElcaComponent(str(layer[0]), str(layer[1]), str(layer[2]), str(layer[3]),str(layer[4]), str(layer[5]), str(layer[6]), str(layer_number), str(layer[8]), str(layer[9]), str(layer[10]), str(layer[11]))
 
 		components_root[-1].set('isLayer', c.isLayer)
 		components_root[-1].set('processConfigUuid', c.processConfigUuid)
@@ -68,7 +68,7 @@ def save_Elements(*Elements):
 		xml_template = ET.parse('sample.xml')
 		element_root = xml_template.getroot()[0]
 
-		e = Element(str(import_element[0]), str(import_element[1]), str(import_element[2]), str(import_element[3]), str(import_element[4]), str(import_element[5]), str(import_element[7]), str(import_element[8]), str(import_element[9]), str(import_element[10]), str(import_element[11]))
+		e = ElcaElement(str(import_element[0]), str(import_element[1]), str(import_element[2]), str(import_element[3]), str(import_element[4]), str(import_element[5]), str(import_element[7]), str(import_element[8]), str(import_element[9]), str(import_element[10]), str(import_element[11]))
 
 		element_root.set('uuid', e.uuid)
 		element_root.set('din276Code', e.din276Code)

@@ -1,5 +1,23 @@
 import os
 import ifcopenshell
+from dataclasses import dataclass
+
+@dataclass
+class IfcElement:
+	"""Class for saving Elementsattributes of Elements"""
+	guid: str
+	din276: str
+	refUnit: str
+	comp_name: str
+	comp_description: str
+	layer: list
+
+@dataclass
+class IfcLayer:
+	"""Class for keeping track of Layerinformation of a Element"""
+	layer_material: str
+	layer_width: float
+	layer_position: int
 
 def multi_layer(ifc_rel_aggregates):
 	first_aggregate = ifc_rel_aggregates[0]
@@ -8,8 +26,6 @@ def multi_layer(ifc_rel_aggregates):
 		print(ifc_element_part)
 		ifc_element_part_name = ifc_element_part[2]
 		print(f"Name of Element_Part: {ifc_element_part_name}")
-		#print('ifc_element_part.IsDefinedBy')
-		#print(ifc_element_part.IsDefinedBy)
 		for i in ifc_element_part.IsDefinedBy:
 			if i.is_a('IfcRelDefinesByProperties') and i.RelatingPropertyDefinition.is_a('IfcElementQuantity'):
 				quant = i.RelatingPropertyDefinition.Quantities
