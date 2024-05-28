@@ -3,7 +3,6 @@ import ifcopenshell
 from dataclasses import dataclass
 from enum import Enum
 import uuid
-#from utils import all
 
 class CompType(Enum):
 	SINGLELAYER = 1
