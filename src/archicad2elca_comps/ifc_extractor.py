@@ -5,19 +5,19 @@ from dataclasses import dataclass
 @dataclass
 class IfcElement:
 	"""Class for saving Elementsattributes of Elements"""
-	guid: str
+	guid: str #done
 	din276: str
 	refUnit: str
-	comp_name: str
+	comp_name: str #done
 	comp_description: str
 	layer: list
 
 @dataclass
 class IfcLayer:
 	"""Class for keeping track of Layerinformation of a Element"""
-	layer_material: str
-	layer_width: float
-	layer_position: int
+	layer_material: str #done
+	layer_width: float #done
+	layer_position: int #done
 
 def multi_layer(ifc_rel_aggregates):
 	first_aggregate = ifc_rel_aggregates[0]
@@ -65,10 +65,14 @@ def get_name_and_width(m, ifc_element):
 		wall_single_layer(ifc_element)
 
 def get_guid(ifc_element):
-	return
+	if ifc_element.get_info():
+		if ifc_element.get_info().get('GlobalId'):
+			guid = ifc_element.get_info().get('GlobalId')
+			print(f"GUID of Element_Part: {guid}")
 
 def run():
 	m = ifcopenshell.open("ifc_import/TestIFC.ifc")
 	walls = m.by_type("IfcWall")
 	for wall in walls:
+		get_guid(wall)
 		get_name_and_width(m, wall)
