@@ -1,0 +1,1 @@
+ExtandToStructure sollte in den IFC-Eigenschaften des Psets_WallCommon mit ausgegeben werden!

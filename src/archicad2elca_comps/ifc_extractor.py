@@ -13,13 +13,18 @@ class FaultyElementAttributeError(Exception):
 		super().__init__(message)
 		self.errors = errors
 
+class IFCExportError(Exception):
+	def __init__(self, message, errors):
+		super().__init__(message)
+		self.errors = errors
+
 @dataclass
 class IfcElement:
 	"""Class for saving Elementsattributes of Elements"""
-	guid: str #done
-	#din276: str
-	#refUnit: str
-	comp_name: str #done
+	guid: str
+	din276: str
+	refUnit: str
+	comp_name: str
 	layers: list
 	comp_description: str | None=None
 
@@ -32,8 +37,66 @@ class IfcLayer:
 def get_guid():
 	return str(uuid.uuid4())
 
+def property_finder(ifc_element, property_set, property_name):
+    for s in ifc_element.IsDefinedBy:
+        if hasattr(s, 'RelatingPropertyDefinition'):
+            if s.RelatingPropertyDefinition.Name == property_set:
+                if hasattr(s.RelatingPropertyDefinition, 'HasProperties'):
+                    for v in s.RelatingPropertyDefinition.HasProperties:
+                        if v.Name == property_name:
+                            return v.NominalValue.wrappedValue
+                elif hasattr(s.RelatingPropertyDefinition, 'Quantities'):
+                    for v in s.RelatingPropertyDefinition.Quantities:
+                        if v.Name == property_name:
+                            for attr, value in vars(v).items():
+                                if attr.endswith('Value'):
+                                    return value
+    return None
+
 def get_din276(ifc_element):
-	pass
+	reference = property_finder(ifc_element, "Pset_WallCommon", "Reference")
+	isExternal = property_finder(ifc_element, "Pset_WallCommon", "IsExternal")
+	isLoadBearing = property_finder(ifc_element, "Pset_WallCommon", "LoadBearing")
+	isExtendToStructure = property_finder(ifc_element, "Pset_WallCommon", "ExtendToStructure")
+	if isExternal is not None:
+		if isLoadBearing is not None:
+			if isExtendToStructure is not None:
+				if isLoadBearing and isExternal and not isExtendToStructure:
+					return 331
+					# Tragende Außenwände
+				elif not isLoadBearing and isExternal and not isExtendToStructure:
+					return 332
+					# Nichttragende Außenwände
+				elif not isLoadBearing and isExternal and isExtendToStructure:
+					return 335
+					# Außenwandbekleidung, außen
+				elif not isLoadBearing and not isExternal and (isExtendToStructure and referenceForExternalWall in reference):
+					return 336
+					# Außenwandbekleidung, innen
+				elif isLoadBearing and not isExternal and not isExtendToStructure:
+					return 341
+					# Tragende Innenwände
+				elif not isLoadBearing and not isExternal and not isExtendToStructure:
+					return 342
+					# Nichttragende Innenwände
+				elif not isLoadBearing and not isExternal and (isExtendToStructure and referenceForInternalWall in reference):
+					return 345
+					# Innenwandbekleidung
+				elif not isLoadBearing and not isExternal and isExtendToStructure:
+					return 000
+			else:
+				raise IFCExportError('ExtantToStucture is missing in Pset_WallCommon')
+		elif isExternal:
+			return 330
+			# Außenwände/Vertikale Baukonstruktionen, außen
+		elif not isExternal:
+			return 340
+			# Innenwände/Vertikale Baukonstruktionen, innen
+		else:
+			raise IFCExportError('LoadBearing is missing in Pset_WallCommon')
+	else:
+		return 300
+		# Bauwerk Baukonstruktionen
 
 def multi_layer(ifc_rel_aggregates):
 	first_aggregate = ifc_rel_aggregates[0]
@@ -110,6 +173,9 @@ def run():
 		except FaultyElementAttributeError:
 			continue
 		guid = get_guid()
-		element_dict.setdefault((comp_name, comp_type), IfcElement(guid=guid, comp_name=comp_name, layers=layer_list))
+		din276 = get_din276(wall)
+		refUnit = 'm'
+
+		element_dict.setdefault((comp_name, comp_type), IfcElement(guid=guid, din276=din276, refUnit=refUnit, comp_name=comp_name, layers=layer_list))
 	for element in list(element_dict.values()):
 		print(element)
