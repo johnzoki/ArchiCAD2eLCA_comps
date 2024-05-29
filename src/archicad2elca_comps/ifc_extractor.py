@@ -21,7 +21,7 @@ class IFCExportError(Exception):
 @dataclass
 class IfcElement:
 	"""Class for saving Elementsattributes of Elements"""
-	guid: str
+	uuid: str
 	din276: str
 	refUnit: str
 	comp_name: str
@@ -34,7 +34,7 @@ class IfcLayer:
 	layer_material: str #done
 	layer_width: float #done
 	layer_position: int #done
-def get_guid():
+def get_uuid():
 	return str(uuid.uuid4())
 
 def property_finder(ifc_element, property_set, property_name):
@@ -172,10 +172,10 @@ def run():
 			comp_name, layer_list, comp_type = get_name_and_width(m, wall)
 		except FaultyElementAttributeError:
 			continue
-		guid = get_guid()
+		uuid = get_uuid()
 		din276 = get_din276(wall)
 		refUnit = 'm'
 
-		element_dict.setdefault((comp_name, comp_type), IfcElement(guid=guid, din276=din276, refUnit=refUnit, comp_name=comp_name, layers=layer_list))
+		element_dict.setdefault((comp_name, comp_type), IfcElement(uuid=uuid, din276=din276, refUnit=refUnit, comp_name=comp_name, layers=layer_list))
 	for element in list(element_dict.values()):
 		print(element)
