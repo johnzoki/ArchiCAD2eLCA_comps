@@ -1,9 +1,6 @@
 import os
-import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-
-start = time.time()
 
 @dataclass
 class ElcaElement:
@@ -91,5 +88,3 @@ import element_import
 
 ET.register_namespace('','https://www.bauteileditor.de')
 save_Elements(element_import.Element1, element_import.Element2, element_import.Element3)
-
-print(time.time()-start)
