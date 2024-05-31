@@ -183,13 +183,11 @@ def get_name_and_width(m, ifc_element):
     element_ref = m.get_inverse(ifc_element)
     ifc_rel_aggregates = [rel for rel in element_ref if rel.is_a("IfcRelAggregates")]
     if ifc_rel_aggregates:
-        psets = ifcopenshell.util.element.get_psets(ifc_element)
+        AC_pset = ifcopenshell.util.element.get_pset(ifc_element, "ArchiCADProperties")
         comp_name = None
-        if psets.get("ArchiCADProperties"):
-            if psets.get("ArchiCADProperties").get("Mehrschichtige Bauteile"):
-                comp_name = psets.get("ArchiCADProperties").get(
-                    "Mehrschichtige Bauteile"
-                )
+        if AC_pset:
+            if AC_pset.get("Mehrschichtige Bauteile"):
+                comp_name = AC_pset.get("Mehrschichtige Bauteile")
         if comp_name:
             comp_layer_list = multi_layer(ifc_rel_aggregates)
             return comp_name, comp_layer_list, CompType.MULTILAYER
