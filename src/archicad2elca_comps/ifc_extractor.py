@@ -3,7 +3,9 @@ import ifcopenshell
 from dataclasses import dataclass
 from enum import Enum
 import uuid
+from archicad2elca_comps.localization import Loc
 
+AC_lang_vars = Loc()
 
 class CompType(Enum):
     SINGLELAYER = 1
@@ -20,7 +22,6 @@ class IFCExportError(Exception):
     def __init__(self, message, errors):
         super().__init__(message)
         self.errors = errors
-
 
 @dataclass
 class IfcElement:
@@ -65,6 +66,14 @@ def property_finder(ifc_element, property_set, property_name):
 
 
 def get_din276Code(ifc_element):
+    """
+    Compare:
+        filename: KG.py;
+        author: Jil Schneider
+        project: Masterthesis Architektur
+        title: Building as Material Resource - Life Cycle Assessment with OpenBIM
+        date: 2021/02/19
+    """
     reference = property_finder(ifc_element, "Pset_WallCommon", "Reference")
     isExternal = property_finder(ifc_element, "Pset_WallCommon", "IsExternal")
     isLoadBearing = property_finder(ifc_element, "Pset_WallCommon", "LoadBearing")
@@ -140,7 +149,7 @@ def multi_layer(ifc_rel_aggregates):
                     q for q in quant if q.is_a("IfcQuantityLength")
                 )
                 for l in list_ifcQuantityLength:
-                    if l.get_info()["Name"] == "Schichtdicke":
+                    if l.get_info()["Name"] == AC_lang_vars.AC_quantity_thickness_name:
                         width = l.get_info()["LengthValue"]
                         break
 
@@ -186,8 +195,10 @@ def get_name_and_width(m, ifc_element):
         AC_pset = ifcopenshell.util.element.get_pset(ifc_element, "ArchiCADProperties")
         comp_name = None
         if AC_pset:
-            if AC_pset.get("Mehrschichtige Bauteile"):
-                comp_name = AC_pset.get("Mehrschichtige Bauteile")
+            if AC_pset.get(AC_lang_vars.AC_multilayer_pset_name):
+                comp_name = AC_pset.get(AC_lang_vars.AC_multilayer_pset_name)
+        else:
+            raise FaultyElementAttributeError(f"No Pset named {AC_lang_vars.AC_multilayer_pset_name} in ArchiCADProperties")
         if comp_name:
             comp_layer_list = multi_layer(ifc_rel_aggregates)
             return comp_name, comp_layer_list, CompType.MULTILAYER
