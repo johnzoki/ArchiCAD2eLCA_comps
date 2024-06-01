@@ -2,6 +2,7 @@ import os
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from archicad2elca_comps import element_import
+from importlib.resources import files
 
 
 @dataclass
@@ -75,11 +76,9 @@ def save_comp(element_root, import_element):
 
 def save_Elements(exportfolder_path, *Elements):
     for element_number, import_element in enumerate(Elements):
-
-        """
-        set_elementVar(element)
-        """
-        xml_template = ET.parse("src/ressources/elca_template.xml")
+        xml_template = ET.parse(
+            files("archicad2elca_comps.resources").joinpath("elca_template.xml")
+        )
         element_root = xml_template.getroot()[0]
 
         e = ElcaElement(
