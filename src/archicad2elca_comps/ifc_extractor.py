@@ -3,9 +3,10 @@ import ifcopenshell
 from dataclasses import dataclass
 from enum import Enum
 import uuid
-from archicad2elca_comps.localization import Loc
+from archicad2elca_comps.localization import Lang
 
-AC_lang_vars = Loc()
+AC_lang_vars = Lang()
+
 
 class CompType(Enum):
     SINGLELAYER = 1
@@ -22,6 +23,7 @@ class IFCExportError(Exception):
     def __init__(self, message, errors):
         super().__init__(message)
         self.errors = errors
+
 
 @dataclass
 class IfcElement:
@@ -198,7 +200,9 @@ def get_name_and_width(m, ifc_element):
             if AC_pset.get(AC_lang_vars.AC_multilayer_pset_name):
                 comp_name = AC_pset.get(AC_lang_vars.AC_multilayer_pset_name)
         else:
-            raise FaultyElementAttributeError(f"No Pset named {AC_lang_vars.AC_multilayer_pset_name} in ArchiCADProperties")
+            raise FaultyElementAttributeError(
+                f"No Pset named {AC_lang_vars.AC_multilayer_pset_name} in ArchiCADProperties"
+            )
         if comp_name:
             comp_layer_list = multi_layer(ifc_rel_aggregates)
             return comp_name, comp_layer_list, CompType.MULTILAYER
@@ -209,8 +213,8 @@ def get_name_and_width(m, ifc_element):
         return (*wall_single_layer(ifc_element), CompType.SINGLELAYER)
 
 
-def ifc_extractor():
-    m = ifcopenshell.open("ifc_import/TestIFC.ifc")
+def ifc_extractor(ifcfile_path):
+    m = ifcopenshell.open(ifcfile_path)
     walls = m.by_type("IfcWall")
     element_dict = {}
     for wall in walls:
