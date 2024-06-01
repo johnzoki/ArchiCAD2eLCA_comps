@@ -154,4 +154,4 @@ archicad2elca_comps = "archicad2elca_comps:main"
 [tool.setuptools]
 # If there are data files included in your packages that need to be
 # installed, specify them here.
-# package-data = {"sample" = ["*.dat"]}
+package-data = {"archicad2elca_comps" = ["ressources/elca_template.xml"]}

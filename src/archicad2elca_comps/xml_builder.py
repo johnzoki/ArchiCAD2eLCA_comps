@@ -1,6 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
+from archicad2elca_comps import element_import
 
 
 @dataclass
@@ -72,13 +73,13 @@ def save_comp(element_root, import_element):
         components_root[-1].set("layerWidth", c.layerWidth)
 
 
-def save_Elements(*Elements):
+def save_Elements(exportfolder_path, *Elements):
     for element_number, import_element in enumerate(Elements):
 
         """
         set_elementVar(element)
         """
-        xml_template = ET.parse("sample.xml")
+        xml_template = ET.parse("src/ressources/elca_template.xml")
         element_root = xml_template.getroot()[0]
 
         e = ElcaElement(
@@ -111,14 +112,18 @@ def save_Elements(*Elements):
 
         xml_filename = f"eLCA_{e.uuid}.xml"
         xml_template.write(
-            "xml_export/" + xml_filename,
+            exportfolder_path + "/" + xml_filename,
             encoding="UTF-8",
             xml_declaration=True,
             short_empty_elements=False,
         )
 
 
-import element_import
-
-ET.register_namespace("", "https://www.bauteileditor.de")
-save_Elements(element_import.Element1, element_import.Element2, element_import.Element3)
+def xml_builder(exportfolder_path):
+    ET.register_namespace("", "https://www.bauteileditor.de")
+    save_Elements(
+        exportfolder_path,
+        element_import.Element1,
+        element_import.Element2,
+        element_import.Element3,
+    )
