@@ -18,7 +18,7 @@ class ElcaElement:
     elca_recycling: str
     elca_seperation: str
     elca_rW: str
-    elca_uValue: float | None = 1.0
+    elca_uValue: float
     quantity: int | None = 1
 
 
