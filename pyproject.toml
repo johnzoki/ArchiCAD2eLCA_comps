@@ -9,7 +9,7 @@ version = "2024.6"
 authors = [
   {name = "Bergmann, John Herbert", email = "john.bergmann@rwth-aachen.de" }
 ]
-description = ""
+description = "A Python project that imports archicad composites out of ifc and archicad attributes.xml and exports eLCA composites for easy LCA"
 readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
@@ -31,15 +31,8 @@ dependencies = [
 Homepage = "https://github.com/johnzoki/ArchiCAD2eLCA_comps"
 Issues = "https://github.com/johnzoki/ArchiCAD2eLCA_comps/issues"
 
-# The following would provide a command line executable called `sample`
-# which executes the function `main` from this package when invoked.
 [project.scripts]
 archicad2elca_comps = "archicad2elca_comps:main"
 
-
-# This is configuration specific to the `setuptools` build backend.
-# If you are using a different build backend, you will need to change this.
 [tool.setuptools]
-# If there are data files included in your packages that need to be
-# installed, specify them here.
 package-data = {"archicad2elca_comps" = ["resources/elca_template.xml"]}

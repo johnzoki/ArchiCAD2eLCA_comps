@@ -30,7 +30,7 @@ class IfcElement:
     """Class for saving Elementsattributes of Elements"""
 
     uuid: str
-    din276Code: str
+    din276Code: int
     refUnit: str
     comp_name: str
     layers: list
@@ -224,7 +224,7 @@ def ifc_extractor(ifcfile_path):
             continue
         uuid = get_uuid()
         din276Code = get_din276Code(wall)
-        refUnit = "m"
+        refUnit = "m2"
 
         element_dict.setdefault(
             (comp_name, comp_type),
@@ -238,4 +238,7 @@ def ifc_extractor(ifcfile_path):
         )
     for element in list(element_dict.values()):
         print(element)
+
+    print("\nDONE! Ifc_extractor has returned all Elements to '__init__'!\n")
+
     return element_dict.values()

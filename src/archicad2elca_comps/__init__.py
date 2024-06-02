@@ -38,5 +38,22 @@ def main():
     ifcfile_path = args.ifcfile
     exportfolder_path = args.exportfolder
 
+    print(
+        """ARCHICAD2ELCA_COMPS
+        AUTOR: 
+            name: Bergmann, John Herbert
+            email: john.bergmann@rwth-aachen.de
+        DESCRIPTION:
+            A Python project that imports archicad composites out of ifc and archicad attributes.xml and exports eLCA composites for easy LCA.
+        CLASSIFIERS:
+            Programming Language :: Python :: 3
+            License :: OSI Approved :: MIT License
+            Operating System :: OS Independent
+            Development Status :: 1 - Planning
+        
+        STARTING ...
+        """
+    )
+
     extracted_elements = ifc_extractor(ifcfile_path=ifcfile_path)
-    xml_builder(exportfolder_path)
+    xml_builder(exportfolder_path=exportfolder_path)
