@@ -31,10 +31,10 @@ class ElcaComponent:
     processConfigName: str
     lifeTime: float | int
     lifeTimeDelay: float | int
-    calcLca: bool
-    isExtant: bool
     layerPosition: int
     layerSize: float
+    calcLca: bool | None = True
+    isExtant: bool | None = False
     layerAreaRatio: float | None = 1.0
     layerLength: float | None = 1.0
     layerWidth: float | None = 1.0

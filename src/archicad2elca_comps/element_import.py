@@ -283,3 +283,117 @@ Element3 = [
     "",  # elca_rW
     0.337,  # elca_uValue
 ]
+
+Element4 = [
+    "e25285b6-004f-404c-a1c1-8bc758961860",  # element_uuid
+    336,  # element_din276Code
+    1,  # quantity
+    "m2",  # refUnit
+    "Gips-Putz/Anstrich, Kalksandstein 24cm, WDVS (Roe)",  # element_name
+    "Dies ist eine Beispiel-Außenwand.",  # element_description
+    [
+        [
+            True,  # component_isLayer
+            "78b4237f-39ce-509c-8ef1-cd3ef145d71f",  # component_processConfigUuid
+            "Innenfarbe Dispersionsfarbe scheuerfest",  # component_processConfigName
+            15,  # component_lifeTime
+            0,  # component_lifeTimeDelay
+            True,  # component_calcLca
+            False,  # component_isExtant
+            1,  # component_layerPosotion
+            0.0003,  # component_layerSize
+            1,  # component_layerAreaRatio
+            1,  # component_layerLenght
+            1,  # component_layerWidth
+        ],
+        [
+            True,  # component_isLayer
+            "cf4e55b6-ef4b-5569-8979-4b85b4cdb285",  # component_processConfigUuid
+            "Gipsputz (Gips)",  # component_processConfigName
+            50,  # component_lifeTime
+            0,  # component_lifeTimeDelay
+            True,  # component_calcLca
+            False,  # component_isExtant
+            1,  # component_layerPosotion
+            0.02,  # component_layerSize
+            1,  # component_layerAreaRatio
+            1,  # component_layerLenght
+            1,  # component_layerWidth
+        ],
+        [
+            True,  # component_isLayer
+            "04248ba1-a306-5398-8229-06c4a9af7a04",  # component_processConfigUuid
+            "Kalksandstein - Bundesverband Kalksandstein",  # component_processConfigName
+            50,  # component_lifeTime
+            0,  # component_lifeTimeDelay
+            True,  # component_calcLca
+            False,  # component_isExtant
+            1,  # component_layerPosotion
+            0.24,  # component_layerSize
+            1,  # component_layerAreaRatio
+            1,  # component_layerLenght
+            1,  # component_layerWidth
+        ],
+        [
+            False,  # component_isLayer
+            "1854ce82-ae66-5465-a950-d9b939fd84cb",  # component_processConfigUuid
+            "Glasarmierungsgitter - Vitrulan",  # component_processConfigName
+            40,  # component_lifeTime
+            0,  # component_lifeTimeDelay
+            True,  # component_calcLca
+            False,  # component_isExtant
+            1,  # component_layerPosotion
+            0.075,  # component_layerSize
+            1,  # component_layerAreaRatio
+            1,  # component_layerLenght
+            1,  # component_layerWidth
+        ],
+        [
+            True,  # component_isLayer
+            "7c4bfb16-81db-5cc9-a236-82958b3bab14",  # component_processConfigUuid
+            "Gipskartonplatte",  # component_processConfigName
+            50,  # component_lifeTime
+            0,  # component_lifeTimeDelay
+            True,  # component_calcLca
+            False,  # component_isExtant
+            1,  # component_layerPosotion
+            0.0125,  # component_layerSize
+            1,  # component_layerAreaRatio
+            1,  # component_layerLenght
+            1,  # component_layerWidth
+        ],
+        [
+            True,  # component_isLayer
+            "7c4bfb16-81db-5cc9-a236-82958b3bab14",  # component_processConfigUuid
+            "Gipskartonplatte",  # component_processConfigName
+            50,  # component_lifeTime
+            0,  # component_lifeTimeDelay
+            True,  # component_calcLca
+            False,  # component_isExtant
+            1,  # component_layerPosotion
+            0.0125,  # component_layerSize
+            1,  # component_layerAreaRatio
+            1,  # component_layerLenght
+            1,  # component_layerWidth
+        ],
+        [
+            True,  # component_isLayer
+            "7c4bfb16-81db-5cc9-a236-82958b3bab14",  # component_processConfigUuid
+            "Gipskartonplatte",  # component_processConfigName
+            50,  # component_lifeTime
+            0,  # component_lifeTimeDelay
+            True,  # component_calcLca
+            False,  # component_isExtant
+            1,  # component_layerPosotion
+            0.0125,  # component_layerSize
+            1,  # component_layerAreaRatio
+            1,  # component_layerLenght
+            1,  # component_layerWidth
+        ],
+    ],
+    "",  # elca_eol
+    "",  # elca_recycling
+    "",  # elca_seperation
+    "",  # elca_rW
+    0.337,  # elca_uValue
+]
