@@ -34,7 +34,7 @@ class IfcElement:
     refUnit: str
     comp_name: str
     layers: list
-    comp_description: str | None = None
+    comp_description: str | None = ""
 
 
 @dataclass
@@ -42,8 +42,13 @@ class IfcLayer:
     """Class for keeping track of Layerinformation of a Element"""
 
     layer_material: str
-    layer_width: float
+    layer_size: float
     layer_position: int
+    layer_uuid: str
+    layer_lifeTime: int
+    layer_lifeTimeDelay: int | None = 0
+    calcLca: bool | None = True
+    isExtant: bool | None = False
 
 
 def get_uuid():
@@ -52,18 +57,20 @@ def get_uuid():
 
 def property_finder(ifc_element, property_set, property_name):
     for s in ifc_element.IsDefinedBy:
-        if hasattr(s, "RelatingPropertyDefinition"):
-            if s.RelatingPropertyDefinition.Name == property_set:
-                if hasattr(s.RelatingPropertyDefinition, "HasProperties"):
-                    for v in s.RelatingPropertyDefinition.HasProperties:
-                        if v.Name == property_name:
-                            return v.NominalValue.wrappedValue
-                elif hasattr(s.RelatingPropertyDefinition, "Quantities"):
-                    for v in s.RelatingPropertyDefinition.Quantities:
-                        if v.Name == property_name:
-                            for attr, value in vars(v).items():
-                                if attr.endswith("Value"):
-                                    return value
+        if (
+            hasattr(s, "RelatingPropertyDefinition")
+            and s.RelatingPropertyDefinition.Name == property_set
+        ):
+            if hasattr(s.RelatingPropertyDefinition, "HasProperties"):
+                for v in s.RelatingPropertyDefinition.HasProperties:
+                    if v.Name == property_name:
+                        return v.NominalValue.wrappedValue
+            elif hasattr(s.RelatingPropertyDefinition, "Quantities"):
+                for v in s.RelatingPropertyDefinition.Quantities:
+                    if v.Name == property_name:
+                        for attr, value in vars(v).items():
+                            if attr.endswith("Value"):
+                                return value
     return None
 
 
@@ -131,35 +138,79 @@ def get_din276Code(ifc_element):
         # Bauwerk Baukonstruktionen
 
 
-def multi_layer(ifc_rel_aggregates):
+def get_material_info(m, ifc_material):
+    layer_uuid = None
+    layer_lifeTime = None
+    layer_lifeTimeDelay = None
+    calcLca = None
+    isExtant = None
+    material_inverse = m.get_inverse(ifc_material)
+    for i in material_inverse:
+        if i.Name == "AC_Pset_MaterialCustom":
+            for prop in i.Properties:
+                if prop.is_a("IfcPropertySingleValue"):
+                    if prop.Name == "OBD_uuid":
+                        layer_uuid = prop.NominalValue[0]
+                    elif prop.Name == "OBD_lifeTime":
+                        layer_lifeTime = prop.NominalValue[0]
+                    elif prop.Name == "OBD_lifeTimeDelay":
+                        layer_lifeTimeDelay = prop.NominalValue[0]
+                    elif prop.Name == "OBD_calcLca":
+                        calcLca = prop.NominalValue[0]
+                    elif prop.Name == "OBD_isExtant":
+                        isExtant = prop.NominalValue[0]
+            break
+
+    ifc_material_name = ifc_material.Name
+    return (
+        ifc_material_name,
+        layer_uuid,
+        layer_lifeTime,
+        layer_lifeTimeDelay,
+        calcLca,
+        isExtant,
+    )
+
+
+def multi_layer(m, ifc_rel_aggregates):
     first_aggregate = ifc_rel_aggregates[0]
     element_comp = first_aggregate[5]
     comp_layer_list = []
     for layer_number, ifc_element_part in enumerate(element_comp, 1):
-
-        if len(ifc_element_part) <= 2:
-            raise FaultyElementAttributeError("No Layername")
-        ifc_element_part_name = ifc_element_part[2]
+        ifc_material_name = None
+        ifc_material = ifcopenshell.util.element.get_material(ifc_element_part)
+        if ifc_material is not None and ifc_material.is_a("IfcMaterial"):
+            (
+                ifc_material_name,
+                layer_uuid,
+                layer_lifeTime,
+                layer_lifeTimeDelay,
+                calcLca,
+                isExtant,
+            ) = get_material_info(m, ifc_material)
+        if ifc_material_name is None:
+            raise FaultyElementAttributeError("Material_name is not defined")
 
         width = None
-        for i in ifc_element_part.IsDefinedBy:
-            if i.is_a(
-                "IfcRelDefinesByProperties"
-            ) and i.RelatingPropertyDefinition.is_a("IfcElementQuantity"):
-                quant = i.RelatingPropertyDefinition.Quantities
-                list_ifcQuantityLength = (
-                    q for q in quant if q.is_a("IfcQuantityLength")
-                )
-                for l in list_ifcQuantityLength:
-                    if l.get_info()["Name"] == AC_lang_vars.AC_quantity_thickness_name:
-                        width = l.get_info()["LengthValue"]
-                        break
-
+        quant = ifcopenshell.util.element.get_pset(
+            ifc_element_part, "Component Quantities"
+        )
+        if quant:
+            width = quant.get(AC_lang_vars.AC_quantity_thickness_name)
         if width is not None:
             l = IfcLayer(
-                layer_material=ifc_element_part_name,
-                layer_width=width,
+                layer_material=ifc_material_name,
+                layer_size=width,
                 layer_position=layer_number,
+                layer_uuid=layer_uuid,
+                layer_lifeTime=int(layer_lifeTime),
+                layer_lifeTimeDelay=(
+                    int(layer_lifeTimeDelay)
+                    if layer_lifeTimeDelay is not None
+                    else IfcLayer.layer_lifeTimeDelay
+                ),
+                calcLca=calcLca if calcLca is not None else IfcLayer.calcLca,
+                isExtant=isExtant if isExtant is not None else IfcLayer.isExtant,
             )
         comp_layer_list.append(l)
     if comp_layer_list:
@@ -168,7 +219,7 @@ def multi_layer(ifc_rel_aggregates):
         raise FaultyElementAttributeError("Empty Layer List")
 
 
-def wall_single_layer(ifc_element):
+def wall_single_layer(m, ifc_element):
     w_pset = ifcopenshell.util.element.get_psets(ifc_element)
     pset_Qto_WallBaseQuantities = w_pset.get("Qto_WallBaseQuantities")
     width = None
@@ -177,20 +228,42 @@ def wall_single_layer(ifc_element):
     if width is None:
         raise FaultyElementAttributeError("Width is not defined")
 
-    material_name = None
+    ifc_material_name = None
     ifc_material = ifcopenshell.util.element.get_material(ifc_element)
     if ifc_material is not None and ifc_material.is_a("IfcMaterial"):
-        material_name = ifc_material.Name
-    if material_name is None:
+        (
+            ifc_material_name,
+            layer_uuid,
+            layer_lifeTime,
+            layer_lifeTimeDelay,
+            calcLca,
+            isExtant,
+        ) = get_material_info(m, ifc_material)
+
+    if ifc_material_name is None:
         raise FaultyElementAttributeError("Material_name is not defined")
+
     comp_layer_list = [
-        IfcLayer(layer_material=material_name, layer_width=width, layer_position=1)
+        IfcLayer(
+            layer_material=ifc_material_name,
+            layer_size=width,
+            layer_position=1,
+            layer_uuid=layer_uuid,
+            layer_lifeTime=int(layer_lifeTime),
+            layer_lifeTimeDelay=(
+                int(layer_lifeTimeDelay)
+                if layer_lifeTimeDelay is not None
+                else IfcLayer.layer_lifeTimeDelay
+            ),
+            calcLca=calcLca if calcLca is not None else IfcLayer.calcLca,
+            isExtant=isExtant if isExtant is not None else IfcLayer.isExtant,
+        )
     ]
-    comp_name = material_name + " " + str(width * 100) + "cm"
+    comp_name = ifc_material_name + " " + str(width * 100) + "cm"
     return comp_name, comp_layer_list
 
 
-def get_name_and_width(m, ifc_element):
+def get_comp_type(m, ifc_element):
     element_ref = m.get_inverse(ifc_element)
     ifc_rel_aggregates = [rel for rel in element_ref if rel.is_a("IfcRelAggregates")]
     if ifc_rel_aggregates:
@@ -204,13 +277,13 @@ def get_name_and_width(m, ifc_element):
                 f"No Pset named {AC_lang_vars.AC_multilayer_pset_name} in ArchiCADProperties"
             )
         if comp_name:
-            comp_layer_list = multi_layer(ifc_rel_aggregates)
+            comp_layer_list = multi_layer(m, ifc_rel_aggregates)
             return comp_name, comp_layer_list, CompType.MULTILAYER
         else:
             raise FaultyElementAttributeError("No Compname in ArchiCADProperties")
     else:
         # No IfcRelAggregates found for Wall
-        return (*wall_single_layer(ifc_element), CompType.SINGLELAYER)
+        return (*wall_single_layer(m, ifc_element), CompType.SINGLELAYER)
 
 
 def ifc_extractor(ifcfile_path):
@@ -219,7 +292,7 @@ def ifc_extractor(ifcfile_path):
     element_dict = {}
     for wall in walls:
         try:
-            comp_name, layer_list, comp_type = get_name_and_width(m, wall)
+            comp_name, layer_list, comp_type = get_comp_type(m, wall)
         except FaultyElementAttributeError:
             continue
         uuid = get_uuid()

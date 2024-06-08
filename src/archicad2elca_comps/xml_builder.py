@@ -13,51 +13,51 @@ class ElcaElement:
     din276Code: int
     refUnit: str
     name: str
-    description: str
-    elca_eol: str
-    elca_recycling: str
-    elca_seperation: str
-    elca_rW: str
-    elca_uValue: float
-    quantity: int | float | None = 1
+    description: str | None = ""
+    elca_eol: str | None = ""
+    elca_recycling: str | None = ""
+    elca_seperation: str | None = ""
+    elca_rW: str | None = ""
+    elca_uValue: str | None = ""
+    quantity: str | None = "1"
 
 
 @dataclass
 class ElcaComponent:
     """Class for keeping track of Component Values of Components Tree"""
 
-    isLayer: bool
     processConfigUuid: str
     processConfigName: str
-    layerPosition: int
-    layerSize: float
-    lifeTime: float | int
-    lifeTimeDelay: float | int | None = 0
-    calcLca: bool | None = True
-    isExtant: bool | None = False
-    layerAreaRatio: float | None = 1.0
-    layerLength: float | None = 1.0
-    layerWidth: float | None = 1.0
+    layerPosition: str
+    layerSize: str
+    lifeTime: str
+    lifeTimeDelay: str | None = "0"
+    isLayer: str | None = "true"
+    calcLca: str | None = "true"
+    isExtant: str | None = "false"
+    layerAreaRatio: str | None = "1.0"
+    layerLength: str | None = "1.0"
+    layerWidth: str | None = "1.0"
 
 
-def save_comp(element_root, import_element):
+def save_comp(element_root, element):
     components_root = element_root[1]
-    for layer_number, layer in enumerate(import_element[6], 1):
+    for layer in element.layers:
         ET.SubElement(components_root, "component")
 
         c = ElcaComponent(
-            isLayer=str(layer[0]).lower(),
-            processConfigUuid=str(layer[1]),
-            processConfigName=str(layer[2]),
-            lifeTime=str(layer[3]),
-            lifeTimeDelay=str(layer[4]),
-            calcLca=str(layer[5]).lower(),
-            isExtant=str(layer[6]).lower(),
-            layerPosition=str(layer_number),
-            layerSize=str(layer[8]),
-            layerAreaRatio=str(layer[9]),
-            layerLength=str(layer[10]),
-            layerWidth=str(layer[11]),
+            # isLayer=layer.is_layer,
+            processConfigUuid=str(layer.layer_uuid),
+            processConfigName=str(layer.layer_material),
+            lifeTime=str(layer.layer_lifeTime),
+            lifeTimeDelay=str(layer.layer_lifeTimeDelay),
+            calcLca=str(layer.calcLca).lower(),
+            isExtant=str(layer.isExtant).lower(),
+            layerPosition=str(layer.layer_position),
+            layerSize=str(layer.layer_size),
+            # layerAreaRatio=layer.layer_areaRatio,
+            # layerLength=layer.layer_length,
+            # layerWidth=layer.layer_width,
         )
 
         components_root[-1].set("isLayer", c.isLayer)
@@ -74,25 +74,26 @@ def save_comp(element_root, import_element):
         components_root[-1].set("layerWidth", c.layerWidth)
 
 
-def save_Elements(exportfolder_path, *Elements):
-    for element_number, import_element in enumerate(Elements):
+def xml_builder(exportfolder_path, elements):
+    ET.register_namespace("", "https://www.bauteileditor.de")
+    for element in elements:
         xml_template = ET.parse(
             files("archicad2elca_comps.resources").joinpath("elca_template.xml")
         )
         element_root = xml_template.getroot()[0]
 
         e = ElcaElement(
-            uuid=str(import_element[0]),
-            din276Code=str(import_element[1]),
-            quantity=str(import_element[2]),
-            refUnit=str(import_element[3]),
-            name=str(import_element[4]),
-            description=str(import_element[5]),
-            elca_eol=str(import_element[7]),
-            elca_recycling=str(import_element[8]),
-            elca_seperation=str(import_element[9]),
-            elca_rW=str(import_element[10]),
-            elca_uValue=str(import_element[11]),
+            uuid=str(element.uuid),
+            din276Code=str(element.din276Code),
+            refUnit=str(element.refUnit),
+            name=str(element.comp_name),
+            description=str(element.comp_description),
+            # elca_eol=element.elca_eol,
+            # elca_recycling=element.elca_recycling,
+            # elca_seperation=element.elca_seperation,
+            # elca_rW=element.elca_rW,
+            # elca_uValue=element.elca_uValue,
+            # quantity=element.quantity,
         )
 
         element_root.set("uuid", e.uuid)
@@ -107,7 +108,7 @@ def save_Elements(exportfolder_path, *Elements):
         element_attributes_root = element_root[4]
         element_attributes_root[4][1].text = e.elca_uValue
 
-        save_comp(element_root, import_element)
+        save_comp(element_root, element)
 
         xml_filename = f"eLCA_{e.uuid}.xml"
         xml_template.write(
@@ -118,15 +119,5 @@ def save_Elements(exportfolder_path, *Elements):
         )
 
         print(f"{xml_filename} has been written to {exportfolder_path}")
-
-
-def xml_builder(exportfolder_path):
-    ET.register_namespace("", "https://www.bauteileditor.de")
-    save_Elements(
-        exportfolder_path,
-        element_import.Element1,
-        element_import.Element2,
-        element_import.Element3,
-    )
 
     print("\nDONE! Xml_builder has exported all Elements as eLCA readable XMLs!")

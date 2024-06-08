@@ -56,4 +56,4 @@ def main():
     )
 
     extracted_elements = ifc_extractor(ifcfile_path=ifcfile_path)
-    xml_builder(exportfolder_path=exportfolder_path)
+    xml_builder(exportfolder_path=exportfolder_path, elements=extracted_elements)

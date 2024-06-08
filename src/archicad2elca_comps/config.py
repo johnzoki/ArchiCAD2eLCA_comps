@@ -8,5 +8,5 @@ languages = {
     "ENGLISH": {
         "AC_multilayer_pset_name": "Composite Structure",
         "AC_quantity_thickness_name": "Component Thickness",
-    }
+    },
 }
