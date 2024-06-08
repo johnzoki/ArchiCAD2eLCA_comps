@@ -51,11 +51,17 @@ class IfcLayer:
     isExtant: bool | None = False
 
 
-def get_uuid():
+def get_uuid() -> str:
+    """
+    Returns a random uuid
+    """
     return str(uuid.uuid4())
 
 
-def property_finder(ifc_element, property_set, property_name):
+def property_finder(ifc_element, property_set, property_name) -> str:
+    """
+    Returns attribute values from RelatingPropertyDefinitions
+    """
     for s in ifc_element.IsDefinedBy:
         if (
             hasattr(s, "RelatingPropertyDefinition")
@@ -76,6 +82,12 @@ def property_finder(ifc_element, property_set, property_name):
 
 def get_din276Code(ifc_element):
     """
+    Returns din276Codes of IfcElements by checking Pset information.
+
+    Parameters:
+        ifc_element:
+            IfcElement in IFC-Model. In this case a wall
+
     Compare:
         filename: KG.py;
         author: Jil Schneider
@@ -139,6 +151,15 @@ def get_din276Code(ifc_element):
 
 
 def get_material_info(m, ifc_material):
+    """
+    Gets specific values in "AC_Pset_MaterialCustom" and name of a given material.
+
+    Parameters:
+        m:
+            IFC-Model
+        ifc_material:
+            Given IfcMaterial of IfcElement or IfcElementPart
+    """
     layer_uuid = None
     layer_lifeTime = None
     layer_lifeTimeDelay = None
@@ -173,6 +194,15 @@ def get_material_info(m, ifc_material):
 
 
 def multi_layer(m, ifc_rel_aggregates):
+    """
+    Creates Objects from IfcLayer classes from Elements with multiple Layers.
+
+    Parameters:
+        m:
+            IFC-Model
+        ifc_rel_aggregates:
+            Set of IfcElementParts of one IfcElement
+    """
     first_aggregate = ifc_rel_aggregates[0]
     element_comp = first_aggregate[5]
     comp_layer_list = []
@@ -220,6 +250,15 @@ def multi_layer(m, ifc_rel_aggregates):
 
 
 def wall_single_layer(m, ifc_element):
+    """
+    Creates one Object from IfcLayer class from Element with just one Layers.
+
+    Parameters:
+        m:
+            IFC-Model
+        ifc_element:
+            Given IfcElement
+    """
     w_pset = ifcopenshell.util.element.get_psets(ifc_element)
     pset_Qto_WallBaseQuantities = w_pset.get("Qto_WallBaseQuantities")
     width = None
@@ -264,6 +303,15 @@ def wall_single_layer(m, ifc_element):
 
 
 def get_comp_type(m, ifc_element):
+    """
+    Decides if given IfcElement is a multilayered Element or singlelayered.
+
+    Parameters:
+        m:
+            IFC-Model
+        ifc_element:
+            Given IfcElement
+    """
     element_ref = m.get_inverse(ifc_element)
     ifc_rel_aggregates = [rel for rel in element_ref if rel.is_a("IfcRelAggregates")]
     if ifc_rel_aggregates:
@@ -287,6 +335,14 @@ def get_comp_type(m, ifc_element):
 
 
 def ifc_extractor(ifcfile_path):
+    """
+    Creates Objects from IfcElement class from Elements and collects all neccessary data to do so.
+    Returns these Objects to '__innit.py__' to later use them in the xml_builder.
+
+    Parameters:
+        ifcfile_path:
+            Given path to IFC4-file, that is to be used for extracting comps
+    """
     m = ifcopenshell.open(ifcfile_path)
     walls = m.by_type("IfcWall")
     element_dict = {}

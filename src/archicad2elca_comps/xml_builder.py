@@ -40,6 +40,15 @@ class ElcaComponent:
 
 
 def save_comp(element_root, element):
+    """
+    Writes xml-strings with ElcaComponent class from given element object.
+
+    Parameters:
+        element_root:
+            Xml root where xml-strings are to be added.
+        element:
+            Object with all information to create object from ElcaComponent.
+    """
     components_root = element_root[1]
     for layer in element.layers:
         ET.SubElement(components_root, "component")
@@ -74,6 +83,15 @@ def save_comp(element_root, element):
 
 
 def xml_builder(exportfolder_path, elements):
+    """
+    Adds xml-strings to 'xml-template' with ElcaElement class from given element object.
+
+    Parameters:
+        exportfolder_path:
+            Destinationfolder to write finished xml-files to.
+        element:
+            Object with all information to create object from ElcaComponent.
+    """
     ET.register_namespace("", "https://www.bauteileditor.de")
     for element in elements:
         xml_template = ET.parse(
