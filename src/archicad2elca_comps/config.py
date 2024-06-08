@@ -4,5 +4,9 @@ languages = {
     "GERMAN": {
         "AC_multilayer_pset_name": "Mehrschichtige Bauteile",
         "AC_quantity_thickness_name": "Schichtdicke",
+    },
+    "ENGLISH": {
+        "AC_multilayer_pset_name": "Composite Structure",
+        "AC_quantity_thickness_name": "Component Thickness",
     }
 }
