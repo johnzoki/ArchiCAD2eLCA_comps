@@ -1,7 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from archicad2elca_comps import element_import
 from importlib.resources import files
 
 
