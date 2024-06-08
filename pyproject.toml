@@ -9,7 +9,7 @@ version = "2024.6"
 authors = [
   {name = "Bergmann, John Herbert", email = "john.bergmann@rwth-aachen.de" }
 ]
-description = "A Python project that imports archicad composites out of ifc and archicad attributes.xml and exports eLCA composites for easy LCA"
+description = "A Python project that extracts ArchiCAD composites out of IFC4-files and exports eLCA composites for easy LCA"
 readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
