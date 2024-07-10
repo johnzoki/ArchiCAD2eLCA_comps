@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "archicad2elca_comps"
-version = "2024.6"
+version = "2024.7"
 authors = [
   {name = "Bergmann, John Herbert", email = "john.bergmann@rwth-aachen.de" }
 ]

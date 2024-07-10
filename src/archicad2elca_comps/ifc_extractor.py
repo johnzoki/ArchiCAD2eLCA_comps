@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from enum import Enum
 import uuid
 from archicad2elca_comps.localization import Lang
+from archicad2elca_comps.config import ifc_types
+from archicad2elca_comps.config import reference_units
 
 AC_lang_vars = Lang()
 
@@ -80,13 +82,31 @@ def property_finder(ifc_element, property_set, property_name) -> str:
     return None
 
 
-def get_din276Code(ifc_element):
+def get_din276Code(ifc_type, ifc_element):
     """
     Returns din276Codes of IfcElements by checking Pset information.
 
     Parameters:
         ifc_element:
-            IfcElement in IFC-Model. In this case a wall
+            IfcElement in IFC-Model.
+        ifc_type:
+            IfcType of IfcElement.
+    """
+    if ifc_type == "IfcWall":
+        return get_din276Code_wall(ifc_element)
+    if ifc_type == "IfcSlab":
+        return get_din276Code_slab(ifc_element)
+    else:
+        return 000
+
+
+def get_din276Code_wall(ifc_element):
+    """
+    Returns din276Codes of IfcWall by checking Pset information.
+
+    Parameters:
+        ifc_element:
+            IfcElement in IFC-Model.
 
     Compare:
         filename: KG.py;
@@ -150,6 +170,52 @@ def get_din276Code(ifc_element):
         # Bauwerk Baukonstruktionen
 
 
+def get_din276Code_slab(ifc_element):
+    """
+    Returns din276Codes of IfcSlab by checking Pset information.
+
+    Parameters:
+        ifc_element:
+            IfcElement in IFC-Model.
+
+    Compare:
+        filename: KG.py;
+        author: Jil Schneider
+        project: Masterthesis Architektur
+        title: Building as Material Resource - Life Cycle Assessment with OpenBIM
+        date: 2021/02/19
+    """
+    isExternal = property_finder(ifc_element, "Pset_SlabCommon", "IsExternal")
+    isLoadBearing = property_finder(ifc_element, "Pset_SlabCommon", "LoadBearing")
+    if hasattr(ifc_element, "PredefinedType"):
+        enum = ifc_element.PredefinedType
+    else:
+        enum = None
+    if enum == None or enum == "NOTDEFINED":
+        enum = "STANDARD"
+
+    if enum == "BASESLAB":
+        return 322
+        # Flachgründungen und Bodenplatten
+    elif enum == "LANDING":
+        return 351
+        # Dachkonstruktionen
+    elif isLoadBearing is not None:
+        if enum == "ROOF" and isLoadBearing:
+            return 361
+            # Dachkonstruktionen
+        elif enum == "ROOF" and not isLoadBearing:
+            return 363
+            # Dachbeläge
+        elif isExternal is not None:
+            if enum == "FLOOR" or (isLoadBearing and not isExternal):
+                return 351
+                # Deckenkonstruktionen
+    else:
+        return 300
+        # Bauwerk Baukonstruktionen
+
+
 def get_material_info(m, ifc_material):
     """
     Gets specific values in "AC_Pset_MaterialCustom" and name of a given material.
@@ -193,7 +259,7 @@ def get_material_info(m, ifc_material):
     )
 
 
-def multi_layer(m, ifc_rel_aggregates):
+def multi_layer(m, ifc_element_parts):
     """
     Creates Objects from IfcLayer classes from Elements with multiple Layers.
 
@@ -203,10 +269,8 @@ def multi_layer(m, ifc_rel_aggregates):
         ifc_rel_aggregates:
             Set of IfcElementParts of one IfcElement
     """
-    first_aggregate = ifc_rel_aggregates[0]
-    element_comp = first_aggregate[5]
     comp_layer_list = []
-    for layer_number, ifc_element_part in enumerate(element_comp, 1):
+    for layer_number, ifc_element_part in enumerate(ifc_element_parts, 1):
         ifc_material_name = None
         ifc_material = ifcopenshell.util.element.get_material(ifc_element_part)
         if ifc_material is not None and ifc_material.is_a("IfcMaterial"):
@@ -249,7 +313,7 @@ def multi_layer(m, ifc_rel_aggregates):
         raise FaultyElementAttributeError("Empty Layer List")
 
 
-def wall_single_layer(m, ifc_element):
+def ifc_element_single_layer(m, ifc_type, ifc_element):
     """
     Creates one Object from IfcLayer class from Element with just one Layers.
 
@@ -259,8 +323,9 @@ def wall_single_layer(m, ifc_element):
         ifc_element:
             Given IfcElement
     """
-    w_pset = ifcopenshell.util.element.get_psets(ifc_element)
-    pset_Qto_WallBaseQuantities = w_pset.get("Qto_WallBaseQuantities")
+    pset_BaseQuantities_name = "Qto_" + ifc_type[3:] + "BaseQuantities"
+    ifc_element_psets = ifcopenshell.util.element.get_psets(ifc_element)
+    pset_Qto_WallBaseQuantities = ifc_element_psets.get(pset_BaseQuantities_name)
     width = None
     if pset_Qto_WallBaseQuantities:
         width = pset_Qto_WallBaseQuantities.get("Width")
@@ -302,7 +367,7 @@ def wall_single_layer(m, ifc_element):
     return comp_name, comp_layer_list
 
 
-def get_comp_type(m, ifc_element):
+def get_comp_type(m, ifc_type, ifc_element):
     """
     Decides if given IfcElement is a multilayered Element or singlelayered.
 
@@ -312,9 +377,8 @@ def get_comp_type(m, ifc_element):
         ifc_element:
             Given IfcElement
     """
-    element_ref = m.get_inverse(ifc_element)
-    ifc_rel_aggregates = [rel for rel in element_ref if rel.is_a("IfcRelAggregates")]
-    if ifc_rel_aggregates:
+    # check if ifc_element has IfcAggregates
+    if len(ifc_element.IsDecomposedBy) != 0:
         AC_pset = ifcopenshell.util.element.get_pset(ifc_element, "ArchiCADProperties")
         comp_name = None
         if AC_pset:
@@ -325,13 +389,35 @@ def get_comp_type(m, ifc_element):
                 f"No Pset named {AC_lang_vars.AC_multilayer_pset_name} in ArchiCADProperties"
             )
         if comp_name:
-            comp_layer_list = multi_layer(m, ifc_rel_aggregates)
+            # define ifc_element_parts in multilayered ifc_element
+            ifc_element_parts = ifc_element.IsDecomposedBy[0].RelatedObjects
+            comp_layer_list = multi_layer(m, ifc_element_parts)
             return comp_name, comp_layer_list, CompType.MULTILAYER
         else:
             raise FaultyElementAttributeError("No Compname in ArchiCADProperties")
+
+        element_ref = m.get_inverse(ifc_element)
+        ifc_rel_aggregates = [
+            rel for rel in element_ref if rel.is_a("IfcRelAggregates")
+        ]
+
     else:
-        # No IfcRelAggregates found for Wall
-        return (*wall_single_layer(m, ifc_element), CompType.SINGLELAYER)
+        return (
+            *ifc_element_single_layer(m, ifc_type, ifc_element),
+            CompType.SINGLELAYER,
+        )
+
+
+def get_refUnit(ifc_type):
+    """
+    Gets refUnit by IfcType that was defined in config.py.
+
+    Parameters:
+        ifc_type:
+            IfcType of IfcElement
+    """
+    refUnit = reference_units[ifc_type]
+    return refUnit
 
 
 def ifc_extractor(ifcfile_path):
@@ -344,29 +430,32 @@ def ifc_extractor(ifcfile_path):
             Given path to IFC4-file, that is to be used for extracting comps
     """
     m = ifcopenshell.open(ifcfile_path)
-    walls = m.by_type("IfcWall")
     element_dict = {}
-    for wall in walls:
-        try:
-            comp_name, layer_list, comp_type = get_comp_type(m, wall)
-        except FaultyElementAttributeError:
-            continue
-        uuid = get_uuid()
-        din276Code = get_din276Code(wall)
-        refUnit = "m2"
+    for ifc_type in ifc_types:
+        ifc_elements = m.by_type(ifc_type)
+        for ifc_element in ifc_elements:
+            try:
+                comp_name, layer_list, comp_type = get_comp_type(
+                    m, ifc_type, ifc_element
+                )
+            except FaultyElementAttributeError:
+                continue
+            uuid = get_uuid()
+            din276Code = get_din276Code(ifc_type, ifc_element)
+            refUnit = get_refUnit(ifc_type)
 
-        element_dict.setdefault(
-            (comp_name, comp_type),
-            IfcElement(
-                uuid=uuid,
-                din276Code=din276Code,
-                refUnit=refUnit,
-                comp_name=comp_name,
-                layers=layer_list,
-            ),
-        )
-    for element in list(element_dict.values()):
-        print(element)
+            element_dict.setdefault(
+                (comp_name, comp_type),
+                IfcElement(
+                    uuid=uuid,
+                    din276Code=din276Code,
+                    refUnit=refUnit,
+                    comp_name=comp_name,
+                    layers=layer_list,
+                ),
+            )
+        for element in list(element_dict.values()):
+            print(element)
 
     print("\nDONE! Ifc_extractor has returned all Elements to '__init__'!\n")
 

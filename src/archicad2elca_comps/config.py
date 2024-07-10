@@ -1,3 +1,5 @@
+ifc_types = ("IfcWall", "IfcSlab")
+reference_units = {"IfcWall": "m2", "IfcSlab": "m2"}
 # SUPPORTED LANGUAGES
 # Set Archicad Language specific Variabeles
 languages = {
