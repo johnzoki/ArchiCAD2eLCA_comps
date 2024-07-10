@@ -36,7 +36,7 @@ class IfcElement:
     refUnit: str
     comp_name: str
     layers: list
-    comp_description: str | None = ""
+    comp_description: str | None = "Dieser Schichtaufbau wurde exportiert mit ArchiCAD2eLCA_comps: https://github.com/johnzoki/ArchiCAD2eLCA_comps"
 
 
 @dataclass
