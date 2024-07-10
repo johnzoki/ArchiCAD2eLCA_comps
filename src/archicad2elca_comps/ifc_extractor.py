@@ -94,8 +94,10 @@ def get_din276Code(ifc_type, ifc_element):
     """
     if ifc_type == "IfcWall":
         return get_din276Code_wall(ifc_element)
-    if ifc_type == "IfcSlab":
+    elif ifc_type == "IfcSlab":
         return get_din276Code_slab(ifc_element)
+    elif ifc_type == "IfcRoof":
+        return get_din276Code_roof(ifc_element)
     else:
         return 000
 
@@ -216,6 +218,20 @@ def get_din276Code_slab(ifc_element):
         # Bauwerk Baukonstruktionen
 
 
+def get_din276Code_roof(ifc_element):
+    isLoadBearing = property_finder(ifc_element, "Pset_RoofCommon", "LoadBearing")
+    if isLoadBearing is not None:
+        if isLoadBearing:
+            return 361
+            # Dachkonstuktionen
+        elif not isLoadBearing:
+            return 363
+            # Dachbeläge
+    else:
+        return 300
+        # Bauwerk Baukonstruktionen
+
+
 def get_material_info(m, ifc_material):
     """
     Gets specific values in "AC_Pset_MaterialCustom" and name of a given material.
@@ -290,7 +306,7 @@ def multi_layer(m, ifc_element_parts):
             ifc_element_part, "Component Quantities"
         )
         if quant:
-            width = quant.get(AC_lang_vars.AC_quantity_thickness_name)
+            width = quant.get(AC_lang_vars.AC_quantity_comp_thickness_name)
         if width is not None:
             l = IfcLayer(
                 layer_material=ifc_material_name,
@@ -325,11 +341,15 @@ def ifc_element_single_layer(m, ifc_type, ifc_element):
     """
     pset_BaseQuantities_name = "Qto_" + ifc_type[3:] + "BaseQuantities"
     ifc_element_psets = ifcopenshell.util.element.get_psets(ifc_element)
-    pset_Qto_WallBaseQuantities = ifc_element_psets.get(pset_BaseQuantities_name)
+    pset_Qto_BaseQuantities = ifc_element_psets.get(pset_BaseQuantities_name)
     width = None
-    if pset_Qto_WallBaseQuantities:
-        width = pset_Qto_WallBaseQuantities.get("Width")
+    if pset_Qto_BaseQuantities:
+        width = pset_Qto_BaseQuantities.get("Width")
     if width is None:
+        pset_ArchiCADQuantities = ifc_element_psets.get("ArchiCADQuantities")
+        if pset_ArchiCADQuantities:
+            width = pset_ArchiCADQuantities.get(AC_lang_vars.AC_quantity_element_thickness_name)
+    if width is None:    
         raise FaultyElementAttributeError("Width is not defined")
 
     ifc_material_name = None
@@ -359,11 +379,11 @@ def ifc_element_single_layer(m, ifc_type, ifc_element):
                 if layer_lifeTimeDelay is not None
                 else IfcLayer.layer_lifeTimeDelay
             ),
-            calcLca=calcLca if calcLca is not None else IfcLayer.calcLca,
-            isExtant=isExtant if isExtant is not None else IfcLayer.isExtant,
+            calcLca=calcLca or IfcLayer.calcLca,
+            isExtant=isExtant or IfcLayer.isExtant,
         )
     ]
-    comp_name = ifc_material_name + " " + str(width * 100) + "cm"
+    comp_name = ifc_material_name + " " + str(round(width * 100, 2)) + "cm"
     return comp_name, comp_layer_list
 
 
